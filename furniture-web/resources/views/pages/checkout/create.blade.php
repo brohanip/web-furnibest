@@ -1,0 +1,73 @@
+@extends('layouts.app')
+
+@section('title', 'Checkout • ' . $product->name)
+
+@section('content')
+    <section class="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+        <nav class="mb-6 text-sm text-slate-500">
+            <a href="{{ route('products.show', $product) }}" class="hover:text-slate-700">← Kembali ke produk</a>
+        </nav>
+
+        <h1 class="text-2xl font-bold tracking-tight">Checkout</h1>
+        <p class="mt-2 text-sm text-slate-600">Lengkapi data pemesanan dan pilih metode pembayaran.</p>
+
+        @if (session('error'))
+            <div class="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">{{ session('error') }}</div>
+        @endif
+
+        <div class="mt-6 overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-sm">
+            <div class="flex gap-4 border-b border-slate-200/60 p-5">
+                @if ($product->image_url)
+                    <img src="{{ $product->image_url }}" alt="" class="h-20 w-20 rounded-xl object-contain bg-white border border-slate-200">
+                @endif
+                <div>
+                    <div class="font-semibold text-slate-900">{{ $product->name }}</div>
+                    @if ($product->size)
+                        <div class="text-sm text-slate-500">{{ $product->size }}</div>
+                    @endif
+                    <div class="mt-1 text-lg font-bold">{{ $product->formatted_price }}</div>
+                </div>
+            </div>
+
+            <form action="{{ route('checkout.store') }}" method="POST" class="grid gap-4 p-5" id="checkoutForm">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-slate-700">Nama lengkap</label>
+                    <input type="text" name="customer_name" value="{{ old('customer_name', $user->name) }}" required class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm">
+                    @error('customer_name') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="grid gap-4 sm:grid-cols-2">
+                    <div>
+                        <label class="mb-1 block text-sm font-semibold text-slate-700">WhatsApp / Telepon</label>
+                        <input type="text" name="customer_phone" value="{{ old('customer_phone', $user->phone) }}" required class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm">
+                        @error('customer_phone') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-sm font-semibold text-slate-700">Email akun</label>
+                        <input type="email" value="{{ $user->email }}" disabled class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-600">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-slate-700">Alamat pengiriman</label>
+                    <textarea name="customer_address" rows="3" required class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm">{{ old('customer_address') }}</textarea>
+                    @error('customer_address') <p class="mt-1 text-xs text-rose-600">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label class="mb-1 block text-sm font-semibold text-slate-700">Catatan (opsional)</label>
+                    <textarea name="notes" rows="2" class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm" placeholder="Warna, ukuran custom, dll.">{{ old('notes') }}</textarea>
+                </div>
+
+                @include('pages.checkout._payment-options', ['product' => $product, 'subtotal' => $product->price])
+
+                <button type="submit" class="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800">
+                    Buat pesanan
+                </button>
+            </form>
+        </div>
+    </section>
+@endsection
